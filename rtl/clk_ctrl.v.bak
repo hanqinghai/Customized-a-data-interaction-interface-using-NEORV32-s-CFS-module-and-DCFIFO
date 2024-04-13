@@ -1,0 +1,32 @@
+module dds_ctrl
+(
+	input				wire				sys_clk					,
+	input				wire				sys_rst_n				,	
+	input				wire	[31:0]	freq						,
+	
+	output			reg				dds_o						
+);
+
+//parameter	MIN_FREQ_DIV =64'd18_446_744_073_709_551_615	;
+reg	[255:0]	cnt;
+wire	[255:0]	add;
+
+parameter Q =(256'd115792089237316195423570985008687907853269984665640564039457584007913129639935/256'd50_000_000);
+																			 
+assign add =freq*Q;
+
+always@(posedge sys_clk or negedge sys_rst_n)
+	if(sys_rst_n ==1'b0)
+		cnt <=256'd0;
+	else
+		cnt <=cnt +add;//64'd2_336_587_582_669_876_54;//64'd12_236_340_235_560_669;//frequency_regulator
+
+always@(posedge sys_clk or negedge sys_rst_n)
+	if(sys_rst_n ==1'b0)
+		dds_o <=1'b0;
+	else if(cnt >=256'd57896044618658097711785492504343953926634992332820282019728792003956564819968)
+		dds_o <=1'b1;
+	else
+		dds_o <=1'b0;
+		
+endmodule
